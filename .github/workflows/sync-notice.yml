@@ -1,0 +1,40 @@
+name: 同步注意事项
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: notice-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 从 Notion 生成 notice.txt
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
+        run: node scripts/sync-notion.mjs
+      - name: 提交并刷新 CDN
+        run: |
+          if git diff --quiet -- notice.txt; then
+            echo "notice.txt 无变化"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add notice.txt
+          git commit -m "sync: 更新注意事项"
+          git push
+          sleep 5
+          curl -fsS "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@main/notice.txt" >/dev/null || echo "CDN 刷新失败，稍后自动生效"
