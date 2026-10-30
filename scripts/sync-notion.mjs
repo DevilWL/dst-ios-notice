@@ -1,11 +1,26 @@
 #!/usr/bin/env node
 import { writeFile } from "node:fs/promises";
 
-const token = process.env.NOTION_TOKEN;
-const rawPage = (process.env.NOTION_PAGE_ID || "").replace(/-/g, "");
-const candidates = rawPage.match(/[0-9a-f]{32}/gi) || [];
-const pageId = candidates.length ? candidates[candidates.length - 1] : "";
+const token = (process.env.NOTION_TOKEN || "").trim();
 const MAX_CHARS = 4000;
+
+function extractPageId(raw) {
+  const value = (raw || "").trim();
+  if (!value) return "";
+  const pageParam = value.match(/[?&]p=([0-9a-f-]{32,36})/i);
+  if (pageParam) {
+    return pageParam[1].replace(/-/g, "").slice(-32);
+  }
+  const withoutQuery = value.split(/[?#]/)[0].replace(/\/+$/, "");
+  const tail = withoutQuery.replace(/-/g, "").slice(-32);
+  if (/^[0-9a-f]{32}$/i.test(tail)) {
+    return tail;
+  }
+  const candidates = value.replace(/-/g, "").match(/[0-9a-f]{32}/gi) || [];
+  return candidates.length ? candidates[candidates.length - 1] : "";
+}
+
+const pageId = extractPageId(process.env.NOTION_PAGE_ID);
 
 if (!token || !pageId) {
   console.error("缺少 NOTION_TOKEN 或 NOTION_PAGE_ID");
