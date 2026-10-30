@@ -2,7 +2,9 @@
 import { writeFile } from "node:fs/promises";
 
 const token = process.env.NOTION_TOKEN;
-const pageId = (process.env.NOTION_PAGE_ID || "").replace(/-/g, "").trim();
+const rawPage = (process.env.NOTION_PAGE_ID || "").replace(/-/g, "");
+const candidates = rawPage.match(/[0-9a-f]{32}/gi) || [];
+const pageId = candidates.length ? candidates[candidates.length - 1] : "";
 const MAX_CHARS = 4000;
 
 if (!token || !pageId) {

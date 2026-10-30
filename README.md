@@ -15,15 +15,22 @@ notice.txt（本仓库）
 游戏弹窗（拉取失败时用上次缓存，再失败用包内默认文案）
 ```
 
+## 最快路径：GitHub Desktop 发布
+
+1. 安装 <https://desktop.github.com/>，打开并用 GitHub 账号登录。
+2. `File` → `Add Local Repository…` → 选择本目录（本目录已经是本地 git 仓库）。
+3. 点右上角 `Publish repository`，把仓库名改成英文（例如 `dst-ios-notice`），**取消勾选** `Keep this code private`，点 `Publish repository`。
+4. 发布后按下面第 2 步继续配置 Notion 和 Secrets。
+
 ## 一次性配置
 
-1. **新建 GitHub 仓库**：公开仓库，例如 `dst-ios-notice`，把本目录全部上传（包含 `.github` 目录）。
+1. **发布 GitHub 仓库**：用上方 GitHub Desktop 最快路径，或网页新建公开仓库后上传本目录（必须包含 `.github` 目录）。
 2. **创建 Notion 集成**：打开 <https://www.notion.so/my-integrations>，新建 internal integration，复制 token。
 3. **共享页面给集成**：打开要作为注意事项的 Notion 页面 → 右上角 `...` → `连接`/`Connections` → 添加刚建的集成。
-4. **复制页面 ID**：从该页面浏览器地址中取最后一段 32 位十六进制字符串（形如 `a1b2c3d4e5f6...`）。
+4. **复制页面链接**：在浏览器打开该页面，整条链接形如 `https://www.notion.so/页面名-<32位ID>?pvs=4`。
 5. **配置 Secrets**：GitHub 仓库 `Settings` → `Secrets and variables` → `Actions` → `New repository secret`：
    - `NOTION_TOKEN`：第 2 步的 token
-   - `NOTION_PAGE_ID`：第 4 步的页面 ID
+   - `NOTION_PAGE_ID`：第 4 步的页面链接或 32 位 ID（脚本会自动提取）
 6. **手动跑一次**：`Actions` → `同步注意事项` → `Run workflow`，确认 `notice.txt` 被更新。
 7. **拿到游戏地址**：
    ```
